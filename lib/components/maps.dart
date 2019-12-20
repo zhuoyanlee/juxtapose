@@ -4,19 +4,27 @@ import 'package:google_map_polyline/google_map_polyline.dart';
 import 'package:juxtapose/models/locations.dart' as locations;
 
 class MapRoute extends StatefulWidget {
+  final String fromAddress;
+  final String toAddress;
+
+  MapRoute({this.fromAddress, this.toAddress});
+
   @override
   _MapState createState() => _MapState();
 }
 
 class _MapState extends State<MapRoute> {
+  String _fromAddress;
+  String _toAddress;
+
   GoogleMapController mapController;
   bool loading;
   List<LatLng> _center_coordinates = new List<LatLng>();
   Map<PolylineId, Polyline> _polylines = <PolylineId, Polyline>{};
   GoogleMapPolyline _googleMapPolyline =
-      new GoogleMapPolyline(apiKey: "AIzaSyAHHCiC9uk3RcTGR24kjY1oNHTVovZ6kVI");
+      new GoogleMapPolyline(apiKey: "AIzaSyDgE5xGH3hYhq-_EJTXS2oThkWzvsSxEf4");
 
-  int _polylineCount=0;
+  int _polylineCount = 0;
 
   //Polyline patterns
   List<List<PatternItem>> patterns = <List<PatternItem>>[
@@ -41,7 +49,7 @@ class _MapState extends State<MapRoute> {
     loading = true;
     _center_coordinates =
         await _googleMapPolyline.getPolylineCoordinatesWithAddress(
-            origin: "Google Mountain View",
+            origin: 'Google Mountain View',
             destination: 'Google San Bruno',
             mode: RouteMode.driving);
     setState(() {
@@ -72,7 +80,6 @@ class _MapState extends State<MapRoute> {
     setState(() {
       _polylines[id] = polyline;
       _polylineCount++;
-
     });
   }
 
@@ -98,6 +105,9 @@ class _MapState extends State<MapRoute> {
 
   @override
   Widget build(BuildContext context) {
+    this._fromAddress = widget.fromAddress;
+    this._toAddress = widget.toAddress;
+
     return Scaffold(
         appBar: AppBar(
           title: Text('Maps Sample App'),
@@ -113,5 +123,4 @@ class _MapState extends State<MapRoute> {
           polylines: Set<Polyline>.of(_polylines.values),
         ));
   }
-
 }

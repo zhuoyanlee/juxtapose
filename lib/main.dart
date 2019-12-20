@@ -52,19 +52,14 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-  TextEditingController _textEditingcontroller;
+  String _fromAddress;
+  String _toAddress;
 
   @override
   void initState() {
     super.initState();
-    _textEditingcontroller = new TextEditingController();
   }
 
-  @override
-  void dispose() {
-    _textEditingcontroller.dispose();
-    super.dispose();
-  }
   void _incrementCounter() {
     setState(() {
       // This call to setState tells the Flutter framework that something has
@@ -103,34 +98,23 @@ class _MyHomePageState extends State<MyHomePage> {
             '$_counter',
             style: Theme.of(context).textTheme.display1,
           ),
-          postWidget(),
           TextField(
             obscureText: false,
-            decoration: InputDecoration (
-              border: OutlineInputBorder(),
-              labelText: 'From'
-            ),
-            controller: _textEditingcontroller,
-            onSubmitted: (String value) async{
-              await showDialog(context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: const Text('From field'),
-                  content: Text('you typed $value'),
-                  actions: <Widget>[
-                    FlatButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/gmap');
-                      },
-                      child: const Text('OK')
-                    )
-                  ],
-                );
-              });
+            decoration: InputDecoration(
+                border: OutlineInputBorder(), labelText: 'From'),
+            onChanged: (text) {
+              _fromAddress = text;
             },
           ),
           RaisedButton(
             onPressed: () {
+              print('From address is ${_fromAddress}');
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => MapRoute(
+                          fromAddress: this._fromAddress,
+                          toAddress: this._toAddress)));
               Navigator.pushNamed(context, '/gmap');
             },
             child: Icon(Icons.add),
@@ -150,7 +134,6 @@ class _MyHomePageState extends State<MyHomePage> {
       future: fetchPost(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-
           return Text(snapshot.data.title);
         } else if (snapshot.hasError) {
           return Text("${snapshot.error}");
@@ -163,7 +146,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<Post> fetchPost() async {
-
     final response =
         await http.get('https://jsonplaceholder.typicode.com/posts/1');
 
