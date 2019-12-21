@@ -12,8 +12,6 @@ class MapRoute extends StatefulWidget {
 }
 
 class _MapState extends State<MapRoute> {
-  String _fromAddress;
-  String _toAddress;
 
   GoogleMapController mapController;
   bool loading;

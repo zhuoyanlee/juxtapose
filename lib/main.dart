@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:juxtapose/components/checklist-widget.dart';
+import 'package:juxtapose/models/item.dart';
 import 'package:juxtapose/models/post.dart';
 import 'dart:convert';
 import 'package:juxtapose/components/maps.dart';
@@ -37,6 +39,7 @@ class MyApp extends StatelessWidget {
         routes: {
           '/': (context) => MyHomePage(),
           '/gmap': (context) => MapRoute(),
+          '/checklist': (context) => ChecklistRoute(),
         });
   }
 }
@@ -124,7 +127,10 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         )),
         floatingActionButton: FloatingActionButton(
-          onPressed: _incrementCounter,
+          onPressed: () {
+            directions.add(new Item('1', 'item'));
+            Navigator.pushNamed(context, '/checklist');
+          },
           tooltip: 'Increment',
           child: Icon(Icons.add),
         ), // This trailing comma makes auto-formatting nicer for build methods.
