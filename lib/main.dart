@@ -4,9 +4,16 @@ import 'package:juxtapose/models/post.dart';
 import 'dart:convert';
 import 'package:juxtapose/components/maps.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:juxtapose/states/directions.dart';
+import 'package:provider/provider.dart';
 
-void main() {DotEnv().load('.env');runApp(MyApp());}
-
+void main() {
+  DotEnv().load('.env');
+  runApp(ChangeNotifierProvider(
+    builder: (context) => DirectionsModel(),
+    child: MyApp(),
+  ));
+}
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -54,8 +61,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-  String _fromAddress;
-  String _toAddress;
 
   @override
   void initState() {
@@ -81,54 +86,50 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text('My Home page'),
-      ),
-      body: Center(
-          // Center is a layout widget. It takes a single child and positions it
-          // in the middle of the parent.
-          child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[
-          Text(
-            'You have pushed the button this many times:',
-          ),
-          Text(
-            '$_counter',
-            style: Theme.of(context).textTheme.display1,
-          ),
-          TextField(
-            obscureText: false,
-            decoration: InputDecoration(
-                border: OutlineInputBorder(), labelText: 'From'),
-            onChanged: (text) {
-              _fromAddress = text;
-            },
-          ),
-          RaisedButton(
-            onPressed: () {
-              print('From address is ${_fromAddress}');
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => MapRoute(
-                          fromAddress: this._fromAddress,
-                          toAddress: this._toAddress)));
-//              Navigator.pushNamed(context, '/gmap');
-            },
-            child: Icon(Icons.add),
-          )
-        ],
-      )),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
+    return Consumer<DirectionsModel>(builder: (context, directions, child) {
+      return Scaffold(
+        appBar: AppBar(
+          // Here we take the value from the MyHomePage object that was created by
+          // the App.build method, and use it to set our appbar title.
+          title: Text('My Home page'),
+        ),
+        body: Center(
+            // Center is a layout widget. It takes a single child and positions it
+            // in the middle of the parent.
+            child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            Text(
+              'You have pushed the button this many times:',
+            ),
+            Text(
+              '$_counter',
+              style: Theme.of(context).textTheme.display1,
+            ),
+            TextField(
+              obscureText: false,
+              decoration: InputDecoration(
+                  border: OutlineInputBorder(), labelText: 'From'),
+              onChanged: (text) {
+                directions.updateAddress(text, '');
+              },
+            ),
+            RaisedButton(
+              onPressed: () {
+                print('From address is ${directions.fromAddress}');
+                Navigator.pushNamed(context, '/gmap');
+              },
+              child: Icon(Icons.add),
+            )
+          ],
+        )),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _incrementCounter,
+          tooltip: 'Increment',
+          child: Icon(Icons.add),
+        ), // This trailing comma makes auto-formatting nicer for build methods.
+      );
+    });
   }
 
   Widget postWidget() {

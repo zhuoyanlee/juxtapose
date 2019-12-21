@@ -3,13 +3,10 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_map_polyline/google_map_polyline.dart';
 import 'package:juxtapose/models/locations.dart' as locations;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:juxtapose/states/directions.dart';
+import 'package:provider/provider.dart';
 
 class MapRoute extends StatefulWidget {
-  final String fromAddress;
-  final String toAddress;
-
-  MapRoute({this.fromAddress, this.toAddress});
-
   @override
   _MapState createState() => _MapState();
 }
@@ -51,10 +48,12 @@ class _MapState extends State<MapRoute> {
   _getPolylinesWithAddress() async {
     print('Google key ${googlekey}');
     loading = true;
-    print('From address ${_fromAddress}');
+    
+
+    print('From address ${Provider.of<DirectionsModel>(context).fromAddress}');
     _center_coordinates =
         await _googleMapPolyline.getPolylineCoordinatesWithAddress(
-            origin: _fromAddress,
+            origin: Provider.of<DirectionsModel>(context).fromAddress,
             destination: 'Google San Bruno',
             mode: RouteMode.driving);
     setState(() {
@@ -114,22 +113,21 @@ class _MapState extends State<MapRoute> {
 
   @override
   Widget build(BuildContext context) {
-    this._fromAddress = widget.fromAddress;
-    this._toAddress = widget.toAddress;
-
-    return Scaffold(
-        appBar: AppBar(
-          title: Text('Maps Sample App'),
-          backgroundColor: Colors.green[700],
-        ),
-        body: GoogleMap(
-          onMapCreated: _onMapCreated,
-          initialCameraPosition: CameraPosition(
-            target: _center,
-            zoom: 5.0,
+    return Consumer<DirectionsModel>(builder: (context, directions, child) {
+      return Scaffold(
+          appBar: AppBar(
+            title: Text('Maps Sample App'),
+            backgroundColor: Colors.green[700],
           ),
-          markers: _markers.values.toSet(),
-          polylines: Set<Polyline>.of(_polylines.values),
-        ));
+          body: GoogleMap(
+            onMapCreated: _onMapCreated,
+            initialCameraPosition: CameraPosition(
+              target: _center,
+              zoom: 5.0,
+            ),
+            markers: _markers.values.toSet(),
+            polylines: Set<Polyline>.of(_polylines.values),
+          ));
+    });
   }
 }
