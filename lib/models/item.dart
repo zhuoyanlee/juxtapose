@@ -3,8 +3,8 @@ class Item {
   String description;
   bool checked;
 
-  Item(id, description) {
-    this.id = id;
+
+  Item(description) {
     this.description = description;
     this.checked = true;
   }

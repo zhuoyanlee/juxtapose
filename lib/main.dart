@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:juxtapose/components/checklist-widget.dart';
@@ -128,14 +130,40 @@ class _MyHomePageState extends State<MyHomePage> {
         )),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            directions.add(new Item('1', 'item'));
-            Navigator.pushNamed(context, '/checklist');
+
+            Navigator.push(
+                context,
+                MaterialPageRoute<Null>(
+                  builder: (BuildContext context) {
+                    return AddItemForm();
+                  },
+                  fullscreenDialog: false,
+                ));
           },
           tooltip: 'Increment',
           child: Icon(Icons.add),
         ), // This trailing comma makes auto-formatting nicer for build methods.
       );
     });
+  }
+
+  Widget addChecklist() {
+    DirectionsModel directions = Provider.of<DirectionsModel>(context);
+
+    return Column(
+      children: <Widget>[
+        TextField(
+          obscureText: false,
+          decoration: InputDecoration(
+              border: OutlineInputBorder(), labelText: 'Description'),
+          onChanged: (text) {},
+        ),
+        RaisedButton(onPressed: () {
+          print('Add item');
+          Navigator.pushNamed(context, '/checklist');
+        }),
+      ],
+    );
   }
 
   Widget postWidget() {
@@ -165,5 +193,49 @@ class _MyHomePageState extends State<MyHomePage> {
       // If that response was not OK, throw an error.
       throw Exception('Failed to load post');
     }
+  }
+}
+
+class AddItemForm extends StatefulWidget {
+  @override
+  State createState() => AddItemState();
+}
+
+class AddItemState extends State<AddItemForm> {
+  final controller = TextEditingController();
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed.
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Add Item'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: TextField(
+          controller: controller,
+          autofocus: true,
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        // When the user presses the button, show an alert dialog containing
+        // the text that the user has entered into the text field.
+        onPressed: () {
+          Item newItem = new Item(controller.text);
+          Provider.of<DirectionsModel>(context).add(newItem);
+          Navigator.pushNamed(context, '/checklist');
+        },
+        tooltip: 'Show me the value!',
+        child: Icon(Icons.text_fields),
+      ),
+    );
   }
 }

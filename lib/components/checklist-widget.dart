@@ -7,17 +7,18 @@ import 'package:provider/provider.dart';
 import 'package:juxtapose/states/directions.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
 
-class ChecklistRoute extends StatelessWidget {
+class ChecklistRoute extends StatefulWidget {
+  @override
+  ChecklistState createState() => ChecklistState();
+}
+
+class ChecklistState extends State<ChecklistRoute> {
   @override
   Widget build(BuildContext context) {
-    List<Item> items = Provider
-        .of<DirectionsModel>(context)
-        .items;
+    List<Item> items = Provider.of<DirectionsModel>(context).items;
     print('Items: ${items}');
 
-    return Scaffold(
-        body: Center(
-            child: _listCheckboxes(items)));
+    return Scaffold(body: Center(child: _listCheckboxes(items)));
 
 //    return ListView.builder(
 //        padding: const EdgeInsets.all(8),
@@ -39,17 +40,18 @@ class ChecklistRoute extends StatelessWidget {
         shrinkWrap: true,
         itemBuilder: (BuildContext context, int index) {
           return Container(
-            height: 50,
-            color: Colors.amber,
-            child: LabeledCheckbox(
+              height: 50,
+              color: Colors.amber,
+              child: LabeledCheckbox(
                 label: items[index].description,
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
                 value: items[index].checked,
                 onChanged: (bool newValue) {
-                  items[index].checked = newValue;
+                  setState(() {
+                    items[index].checked = newValue;
+                  });
                 },
-          ));
+              ));
         });
   }
 }
-
