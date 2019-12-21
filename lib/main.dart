@@ -3,8 +3,10 @@ import 'package:http/http.dart' as http;
 import 'package:juxtapose/models/post.dart';
 import 'dart:convert';
 import 'package:juxtapose/components/maps.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() => runApp(MyApp());
+void main() {DotEnv().load('.env');runApp(MyApp());}
+
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -115,7 +117,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       builder: (context) => MapRoute(
                           fromAddress: this._fromAddress,
                           toAddress: this._toAddress)));
-              Navigator.pushNamed(context, '/gmap');
+//              Navigator.pushNamed(context, '/gmap');
             },
             child: Icon(Icons.add),
           )

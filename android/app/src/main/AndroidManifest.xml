@@ -1,4 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.projectjuxtapose.juxtapose">
 
     <!-- io.flutter.app.FlutterApplication is an android.app.Application that
@@ -33,4 +34,6 @@
             </intent-filter>
         </activity>
     </application>
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 </manifest>

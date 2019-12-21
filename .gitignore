@@ -8,6 +8,8 @@
 .buildlog/
 .history
 .svn/
+.env*
+settings_aar.gradle
 
 # IntelliJ related
 *.iml
@@ -23,7 +25,7 @@
 # Flutter/Dart/Pub related
 **/doc/api/
 .dart_tool/
-.flutter-plugins
+.flutter-plugins*
 .packages
 .pub-cache/
 .pub/

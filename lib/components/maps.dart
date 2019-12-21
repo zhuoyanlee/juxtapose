@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_map_polyline/google_map_polyline.dart';
 import 'package:juxtapose/models/locations.dart' as locations;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class MapRoute extends StatefulWidget {
   final String fromAddress;
@@ -21,8 +22,10 @@ class _MapState extends State<MapRoute> {
   bool loading;
   List<LatLng> _center_coordinates = new List<LatLng>();
   Map<PolylineId, Polyline> _polylines = <PolylineId, Polyline>{};
+  String googlekey = DotEnv().env['googleMapsKey'];
+
   GoogleMapPolyline _googleMapPolyline =
-      new GoogleMapPolyline(apiKey: "AIzaSyDgE5xGH3hYhq-_EJTXS2oThkWzvsSxEf4");
+      new GoogleMapPolyline(apiKey: DotEnv().env['googleMapsKey']);
 
   int _polylineCount = 0;
 
@@ -46,23 +49,29 @@ class _MapState extends State<MapRoute> {
 
   //Get polyline with Address
   _getPolylinesWithAddress() async {
+    print('Google key ${googlekey}');
     loading = true;
+    print('From address ${_fromAddress}');
     _center_coordinates =
         await _googleMapPolyline.getPolylineCoordinatesWithAddress(
-            origin: 'Google Mountain View',
+            origin: _fromAddress,
             destination: 'Google San Bruno',
             mode: RouteMode.driving);
     setState(() {
       _polylines.clear();
+      print('Center coordinates ${_center_coordinates}');
+      if (_center_coordinates != null) {
+        print('animating camera');
+        _addPolyline(_center_coordinates);
 
-      // Move camera position
-      mapController.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
-        target: _center_coordinates.first,
-        zoom: 9.0,
-      )));
+        // Move camera position
+        mapController
+            .animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
+          target: _center_coordinates.first,
+          zoom: 9.0,
+        )));
+      }
     });
-
-    _addPolyline(_center_coordinates);
 
     loading = false;
   }
