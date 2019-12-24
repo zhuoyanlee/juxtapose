@@ -18,19 +18,13 @@ class ChecklistState extends State<ChecklistRoute> {
     List<Item> items = Provider.of<DirectionsModel>(context).items;
     print('Items: ${items}');
 
-    return Scaffold(body: Center(child: _listCheckboxes(items)));
-
-//    return ListView.builder(
-//        padding: const EdgeInsets.all(8),
-//        itemCount: items.length,
-//        shrinkWrap: true,
-//        itemBuilder: (BuildContext context, int index) {
-//          return Container(
-//            height: 50,
-//            color: Colors.amber,
-//            child: Center(child: Text('Entry ${items[index]}')),
-//          );
-//        });
+    return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [_listCheckboxes(items)]);
+//    return _listCheckboxes(items);
+//    return Center(child: _listCheckboxes(items));
+    // If using it as a page, use Scarffold
+//    Scaffold(body: Center(child: _listCheckboxes(items)));
   }
 
   ListView _listCheckboxes(List<Item> items) {

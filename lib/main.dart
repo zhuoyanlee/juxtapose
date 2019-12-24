@@ -1,8 +1,12 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
+import 'package:juxtapose/components/booking-form.dart';
 import 'package:juxtapose/components/checklist-widget.dart';
+import 'package:juxtapose/services/api.dart';
+import 'package:juxtapose/services/database-service.dart';
 import 'package:juxtapose/models/item.dart';
 import 'package:juxtapose/models/post.dart';
 import 'dart:convert';
@@ -10,9 +14,18 @@ import 'package:juxtapose/components/maps.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:juxtapose/states/directions.dart';
 import 'package:provider/provider.dart';
+import 'package:juxtapose/locator.dart';
+
+// This is our global ServiceLocator
+GetIt getIt = GetIt.instance;
+
 
 void main() {
   DotEnv().load('.env');
+
+  getIt.registerLazySingleton(() => Api('items'));
+  getIt.registerFactory(() => DirectionsModel());
+//  getIt.registerSingleton<DirectionsModel>(DirectionsModel(),signalsReady:true);
   runApp(ChangeNotifierProvider(
     builder: (context) => DirectionsModel(),
     child: MyApp(),
@@ -40,6 +53,7 @@ class MyApp extends StatelessWidget {
         initialRoute: '/',
         routes: {
           '/': (context) => MyHomePage(),
+          '/booking': (context) => BookingForm(),
           '/gmap': (context) => MapRoute(),
           '/checklist': (context) => ChecklistRoute(),
         });
@@ -72,16 +86,6 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
   }
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,28 +108,7 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.display1,
-            ),
-            TextField(
-              obscureText: false,
-              decoration: InputDecoration(
-                  border: OutlineInputBorder(), labelText: 'From'),
-              onChanged: (text) {
-                directions.updateAddress(text, '');
-              },
-            ),
-            RaisedButton(
-              onPressed: () {
-                print('From address is ${directions.fromAddress}');
-                Navigator.pushNamed(context, '/gmap');
-              },
-              child: Icon(Icons.add),
-            )
+            ChecklistRoute()
           ],
         )),
         floatingActionButton: FloatingActionButton(
@@ -160,7 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         RaisedButton(onPressed: () {
           print('Add item');
-          Navigator.pushNamed(context, '/checklist');
+          Navigator.pushNamed(context, '/');
         }),
       ],
     );
@@ -230,8 +213,9 @@ class AddItemState extends State<AddItemForm> {
         // the text that the user has entered into the text field.
         onPressed: () {
           Item newItem = new Item(controller.text);
-          Provider.of<DirectionsModel>(context).add(newItem);
-          Navigator.pushNamed(context, '/checklist');
+          Provider.of<DirectionsModel>(context).addItem(newItem);
+          DatabaseService.createRecord(controller.text, true);
+          Navigator.pushNamed(context, '/');
         },
         tooltip: 'Show me the value!',
         child: Icon(Icons.text_fields),
