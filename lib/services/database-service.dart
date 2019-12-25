@@ -44,7 +44,7 @@ class DatabaseService {
   static void createRecord(description, checked) {
     FirebaseDatabase.instance
         .reference().child("items").push().set({
-      'id': 1234,
+      'id': '1234',
       'description': description,
       'checked': checked
     });

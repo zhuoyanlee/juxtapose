@@ -14,7 +14,6 @@ import 'package:juxtapose/components/maps.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:juxtapose/states/directions.dart';
 import 'package:provider/provider.dart';
-import 'package:juxtapose/locator.dart';
 
 // This is our global ServiceLocator
 GetIt getIt = GetIt.instance;
@@ -25,6 +24,7 @@ void main() {
 
   getIt.registerLazySingleton(() => Api('items'));
   getIt.registerFactory(() => DirectionsModel());
+
 //  getIt.registerSingleton<DirectionsModel>(DirectionsModel(),signalsReady:true);
   runApp(ChangeNotifierProvider(
     builder: (context) => DirectionsModel(),
@@ -214,7 +214,7 @@ class AddItemState extends State<AddItemForm> {
         onPressed: () {
           Item newItem = new Item(controller.text);
           Provider.of<DirectionsModel>(context).addItem(newItem);
-          DatabaseService.createRecord(controller.text, true);
+//          DatabaseService.createRecord(controller.text, true);
           Navigator.pushNamed(context, '/');
         },
         tooltip: 'Show me the value!',
