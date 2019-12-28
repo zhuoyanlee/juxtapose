@@ -6,7 +6,6 @@ import 'package:http/http.dart' as http;
 import 'package:juxtapose/components/booking-form.dart';
 import 'package:juxtapose/components/checklist-widget.dart';
 import 'package:juxtapose/services/api.dart';
-import 'package:juxtapose/services/database-service.dart';
 import 'package:juxtapose/models/item.dart';
 import 'package:juxtapose/models/post.dart';
 import 'dart:convert';
@@ -17,7 +16,6 @@ import 'package:provider/provider.dart';
 
 // This is our global ServiceLocator
 GetIt getIt = GetIt.instance;
-
 
 void main() {
   DotEnv().load('.env');
@@ -86,7 +84,6 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
   }
 
-
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -100,20 +97,47 @@ class _MyHomePageState extends State<MyHomePage> {
         appBar: AppBar(
           // Here we take the value from the MyHomePage object that was created by
           // the App.build method, and use it to set our appbar title.
-          title: Text('My Home page'),
+          title: Text('ALCP checklist'),
+        ),
+        drawer: Drawer(
+          child: ListView(
+            // Important: Remove any padding from the ListView.
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              DrawerHeader(
+                child: Text('Drawer Header'),
+                decoration: BoxDecoration(
+                  color: Colors.amber,
+                ),
+              ),
+              ListTile(
+                title: Text('Default'),
+                onTap: () {
+                  Provider.of<DirectionsModel>(context).setListName('default');
+                  // Then close the drawer
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                title: Text('Asian'),
+                onTap: () {
+                  Provider.of<DirectionsModel>(context).setListName('Asian');
+                  // Then close the drawer
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
         ),
         body: Center(
             // Center is a layout widget. It takes a single child and positions it
             // in the middle of the parent.
             child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            ChecklistRoute()
-          ],
+          children: <Widget>[ChecklistRoute()],
         )),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-
             Navigator.push(
                 context,
                 MaterialPageRoute<Null>(
@@ -196,30 +220,37 @@ class AddItemState extends State<AddItemForm> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Add Item'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: TextField(
+        child: TextFormField(
           controller: controller,
           autofocus: true,
+          onFieldSubmitted: (controller) {
+            _submitAction();
+          },
         ),
       ),
       floatingActionButton: FloatingActionButton(
         // When the user presses the button, show an alert dialog containing
         // the text that the user has entered into the text field.
         onPressed: () {
-          Item newItem = new Item(controller.text);
-          Provider.of<DirectionsModel>(context).addItem(newItem);
-//          DatabaseService.createRecord(controller.text, true);
-          Navigator.pushNamed(context, '/');
+          _submitAction();
         },
         tooltip: 'Show me the value!',
         child: Icon(Icons.text_fields),
       ),
     );
+  }
+
+  void _submitAction() {
+    DirectionsModel model = Provider.of<DirectionsModel>(context);
+    Item newItem = new Item(model.getListName(), controller.text);
+    model.addItem(newItem);
+
+    Navigator.pushNamed(context, '/');
   }
 }

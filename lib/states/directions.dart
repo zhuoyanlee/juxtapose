@@ -15,9 +15,11 @@ class DirectionsModel extends ChangeNotifier {
 
   Api _api = getIt<Api>();
 
+
   String fromAddress;
   String toAddress;
 
+  String listName = 'default';
   List<Item> _items = [];
 
   void updateAddress(String from, String to) {
@@ -34,12 +36,24 @@ class DirectionsModel extends ChangeNotifier {
     this.toAddress = value;
     notifyListeners();
   }
+
+  String getListName() {
+    return listName;
+  }
+
+  void setListName(String value) {
+    this.listName = value;
+    notifyListeners();
+  }
+
+
   /// An unmodifiable view of the items in the cart.
   UnmodifiableListView<Item> get items => UnmodifiableListView(_items);
 
   Future<List<Item>> fetchItems() async {
     var result = await _api.getDataCollection();
     _items = result.documents
+        .where((x)=> x.data['name']==this.listName)
         .map((doc) => Item.fromMap(doc.data, doc.documentID))
         .toList();
     return _items;
