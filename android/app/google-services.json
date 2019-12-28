@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "735477979190",
+    "firebase_url": "https://juxtapose-efe7d.firebaseio.com",
+    "project_id": "juxtapose-efe7d",
+    "storage_bucket": "juxtapose-efe7d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:735477979190:android:b317e13406ca2de17ce097",
+        "android_client_info": {
+          "package_name": "com.projectjuxtapose.juxtapose"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "735477979190-rcfs6aje39daku7pov5i64fua71r0si6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBM8ICty6b4yExIFhu08u1aJKAa0_0NX6U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "735477979190-rcfs6aje39daku7pov5i64fua71r0si6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

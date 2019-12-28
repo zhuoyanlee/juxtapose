@@ -1,6 +1,11 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
+import 'package:juxtapose/components/booking-form.dart';
 import 'package:juxtapose/components/checklist-widget.dart';
+import 'package:juxtapose/services/api.dart';
 import 'package:juxtapose/models/item.dart';
 import 'package:juxtapose/models/post.dart';
 import 'dart:convert';
@@ -9,8 +14,16 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:juxtapose/states/directions.dart';
 import 'package:provider/provider.dart';
 
+// This is our global ServiceLocator
+GetIt getIt = GetIt.instance;
+
 void main() {
   DotEnv().load('.env');
+
+  getIt.registerLazySingleton(() => Api('items'));
+  getIt.registerFactory(() => DirectionsModel());
+
+//  getIt.registerSingleton<DirectionsModel>(DirectionsModel(),signalsReady:true);
   runApp(ChangeNotifierProvider(
     builder: (context) => DirectionsModel(),
     child: MyApp(),
@@ -38,6 +51,7 @@ class MyApp extends StatelessWidget {
         initialRoute: '/',
         routes: {
           '/': (context) => MyHomePage(),
+          '/booking': (context) => BookingForm(),
           '/gmap': (context) => MapRoute(),
           '/checklist': (context) => ChecklistRoute(),
         });
@@ -70,17 +84,6 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
   }
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -94,48 +97,80 @@ class _MyHomePageState extends State<MyHomePage> {
         appBar: AppBar(
           // Here we take the value from the MyHomePage object that was created by
           // the App.build method, and use it to set our appbar title.
-          title: Text('My Home page'),
+          title: Text('ALCP checklist'),
+        ),
+        drawer: Drawer(
+          child: ListView(
+            // Important: Remove any padding from the ListView.
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              DrawerHeader(
+                child: Text('Drawer Header'),
+                decoration: BoxDecoration(
+                  color: Colors.amber,
+                ),
+              ),
+              ListTile(
+                title: Text('Default'),
+                onTap: () {
+                  Provider.of<DirectionsModel>(context).setListName('default');
+                  // Then close the drawer
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                title: Text('Asian'),
+                onTap: () {
+                  Provider.of<DirectionsModel>(context).setListName('Asian');
+                  // Then close the drawer
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
         ),
         body: Center(
             // Center is a layout widget. It takes a single child and positions it
             // in the middle of the parent.
             child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.display1,
-            ),
-            TextField(
-              obscureText: false,
-              decoration: InputDecoration(
-                  border: OutlineInputBorder(), labelText: 'From'),
-              onChanged: (text) {
-                directions.updateAddress(text, '');
-              },
-            ),
-            RaisedButton(
-              onPressed: () {
-                print('From address is ${directions.fromAddress}');
-                Navigator.pushNamed(context, '/gmap');
-              },
-              child: Icon(Icons.add),
-            )
-          ],
+          children: <Widget>[ChecklistRoute()],
         )),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            directions.add(new Item('1', 'item'));
-            Navigator.pushNamed(context, '/checklist');
+            Navigator.push(
+                context,
+                MaterialPageRoute<Null>(
+                  builder: (BuildContext context) {
+                    return AddItemForm();
+                  },
+                  fullscreenDialog: false,
+                ));
           },
           tooltip: 'Increment',
           child: Icon(Icons.add),
         ), // This trailing comma makes auto-formatting nicer for build methods.
       );
     });
+  }
+
+  Widget addChecklist() {
+    DirectionsModel directions = Provider.of<DirectionsModel>(context);
+
+    return Column(
+      children: <Widget>[
+        TextField(
+          obscureText: false,
+          decoration: InputDecoration(
+              border: OutlineInputBorder(), labelText: 'Description'),
+          onChanged: (text) {},
+        ),
+        RaisedButton(onPressed: () {
+          print('Add item');
+          Navigator.pushNamed(context, '/');
+        }),
+      ],
+    );
   }
 
   Widget postWidget() {
@@ -165,5 +200,57 @@ class _MyHomePageState extends State<MyHomePage> {
       // If that response was not OK, throw an error.
       throw Exception('Failed to load post');
     }
+  }
+}
+
+class AddItemForm extends StatefulWidget {
+  @override
+  State createState() => AddItemState();
+}
+
+class AddItemState extends State<AddItemForm> {
+  final controller = TextEditingController();
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed.
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Add Item'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: TextFormField(
+          controller: controller,
+          autofocus: true,
+          onFieldSubmitted: (controller) {
+            _submitAction();
+          },
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        // When the user presses the button, show an alert dialog containing
+        // the text that the user has entered into the text field.
+        onPressed: () {
+          _submitAction();
+        },
+        tooltip: 'Show me the value!',
+        child: Icon(Icons.text_fields),
+      ),
+    );
+  }
+
+  void _submitAction() {
+    DirectionsModel model = Provider.of<DirectionsModel>(context);
+    Item newItem = new Item(model.getListName(), controller.text);
+    model.addItem(newItem);
+
+    Navigator.pushNamed(context, '/');
   }
 }
