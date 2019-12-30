@@ -1,10 +1,9 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:juxtapose/components/booking-form.dart';
 import 'package:juxtapose/components/checklist-widget.dart';
+import 'package:juxtapose/enums/listType.dart';
 import 'package:juxtapose/services/api.dart';
 import 'package:juxtapose/models/item.dart';
 import 'package:juxtapose/models/post.dart';
@@ -77,7 +76,10 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  int _currentIndex = 0;
+
+  TextEditingController _saveListController = TextEditingController();
+
 
   @override
   void initState() {
@@ -86,6 +88,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+
+    _currentIndex = ListType.getIndexByListName(Provider.of<DirectionsModel>(context).listName);
+
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -97,7 +103,63 @@ class _MyHomePageState extends State<MyHomePage> {
         appBar: AppBar(
           // Here we take the value from the MyHomePage object that was created by
           // the App.build method, and use it to set our appbar title.
-          title: Text('ALCP checklist'),
+          title: Text('${directions.listName} shopping list'),
+          actions: <Widget>[
+            PopupMenuButton(
+              onSelected: (value) {
+                //print the selected option
+                print(value);
+
+                // Save list pressed
+                if(value==0) {
+                  _displaySaveListDialog(context);
+                }
+
+                //Update the current choice.
+                //However, this choice won't be updated in body section since it's a Stateless widget.
+
+              },
+              itemBuilder: (BuildContext context) => <PopupMenuEntry>[
+                const PopupMenuItem(
+                  value: 0,
+                  child: Text('Save list'),
+                ),
+                const PopupMenuItem(
+                  value: 1,
+                  child: Text('Clear list'),
+                ),
+              ],
+            ),
+          ],
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          onTap: _onNavigationTabTapped,
+          // new
+          selectedItemColor: Colors.amber,
+          currentIndex: _currentIndex,
+          type: BottomNavigationBarType.fixed,
+          items: [
+            BottomNavigationBarItem(
+              icon: new Icon(Icons.shopping_basket),
+              title: new Text(ListType.DEFAULT),
+            ),
+            BottomNavigationBarItem(
+              icon: new Icon(Icons.accessibility),
+              title: new Text(ListType.ASIAN),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.shutter_speed),
+              title: Text(ListType.ALDI),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.attach_money),
+              title: Text(ListType.COSTCO),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.attach_money),
+              title: Text(ListType.OTHER),
+            )
+          ],
         ),
         drawer: Drawer(
           child: ListView(
@@ -105,23 +167,39 @@ class _MyHomePageState extends State<MyHomePage> {
             padding: EdgeInsets.zero,
             children: <Widget>[
               DrawerHeader(
-                child: Text('Drawer Header'),
+                child: Text('Shopping Lists'),
                 decoration: BoxDecoration(
-                  color: Colors.amber,
+                  color: theme.primaryColor,
                 ),
               ),
               ListTile(
-                title: Text('Default'),
+                title: Text(ListType.DEFAULT),
                 onTap: () {
-                  Provider.of<DirectionsModel>(context).setListName('default');
+                  Provider.of<DirectionsModel>(context).setListName(ListType.DEFAULT);
                   // Then close the drawer
                   Navigator.pop(context);
                 },
               ),
               ListTile(
-                title: Text('Asian'),
+                title: Text(ListType.ASIAN),
                 onTap: () {
-                  Provider.of<DirectionsModel>(context).setListName('Asian');
+                  Provider.of<DirectionsModel>(context).setListName(ListType.ASIAN);
+                  // Then close the drawer
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                title: Text(ListType.ALDI),
+                onTap: () {
+                  Provider.of<DirectionsModel>(context).setListName(ListType.ALDI);
+                  // Then close the drawer
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                title: Text(ListType.COSTCO),
+                onTap: () {
+                  Provider.of<DirectionsModel>(context).setListName(ListType.COSTCO);
                   // Then close the drawer
                   Navigator.pop(context);
                 },
@@ -151,6 +229,13 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Icon(Icons.add),
         ), // This trailing comma makes auto-formatting nicer for build methods.
       );
+    });
+  }
+
+  void _onNavigationTabTapped(int index) {
+    setState(() {
+      Provider.of<DirectionsModel>(context).setListName(ListType.getListNameByIndex(index));
+      _currentIndex = index;
     });
   }
 
@@ -201,6 +286,34 @@ class _MyHomePageState extends State<MyHomePage> {
       throw Exception('Failed to load post');
     }
   }
+
+  _displaySaveListDialog(BuildContext context) async {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Save list as'),
+            content: TextField(
+              controller: _saveListController,
+              decoration: InputDecoration(hintText: "List Name"),
+            ),
+            actions: <Widget>[
+              new FlatButton(
+                child: new Text('SAVE'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              new FlatButton(
+                child: new Text('CANCEL'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            ],
+          );
+        });
+  }
 }
 
 class AddItemForm extends StatefulWidget {
@@ -232,6 +345,7 @@ class AddItemState extends State<AddItemForm> {
           onFieldSubmitted: (controller) {
             _submitAction();
           },
+          textInputAction: TextInputAction.done,
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -241,7 +355,7 @@ class AddItemState extends State<AddItemForm> {
           _submitAction();
         },
         tooltip: 'Show me the value!',
-        child: Icon(Icons.text_fields),
+        child: Icon(Icons.add_shopping_cart),
       ),
     );
   }
