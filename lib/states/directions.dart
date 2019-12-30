@@ -2,24 +2,20 @@ import 'dart:collection';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:juxtapose/locator.dart';
+import 'package:juxtapose/enums/listType.dart';
 import 'package:juxtapose/main.dart';
 import 'package:juxtapose/models/item.dart';
-import 'package:juxtapose/services/api.dart';
+import 'package:juxtapose/services/itemsApi.dart';
 
 class DirectionsModel extends ChangeNotifier {
 
-  DirectionsModel() {
-
-  }
-
-  Api _api = getIt<Api>();
+  ItemsApi _api = getIt<ItemsApi>();
 
 
   String fromAddress;
   String toAddress;
 
-  String listName = 'default';
+  String listName = ListType.DEFAULT;
   List<Item> _items = [];
 
   void updateAddress(String from, String to) {
@@ -52,6 +48,7 @@ class DirectionsModel extends ChangeNotifier {
 
   Future<List<Item>> fetchItems() async {
     var result = await _api.getDataCollection();
+
     _items = result.documents
         .where((x)=> x.data['name']==this.listName)
         .map((doc) => Item.fromMap(doc.data, doc.documentID))

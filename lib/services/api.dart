@@ -1,12 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class Api {
+abstract class Api<collection> {
   final Firestore _db = Firestore.instance;
-  final String path;
+  String path = 'items';
   CollectionReference ref;
 
-  Api(this.path) {
-    ref = _db.collection(path);
+
+  Api(){
+    ref = _db.collection(collection.toString());
   }
 
   Future<QuerySnapshot> getDataCollection() {

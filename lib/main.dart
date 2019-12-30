@@ -4,12 +4,15 @@ import 'package:http/http.dart' as http;
 import 'package:juxtapose/components/booking-form.dart';
 import 'package:juxtapose/components/checklist-widget.dart';
 import 'package:juxtapose/enums/listType.dart';
+import 'package:juxtapose/models/favourite.dart';
 import 'package:juxtapose/services/api.dart';
 import 'package:juxtapose/models/item.dart';
 import 'package:juxtapose/models/post.dart';
 import 'dart:convert';
 import 'package:juxtapose/components/maps.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:juxtapose/services/favouriteApi.dart';
+import 'package:juxtapose/services/itemsApi.dart';
 import 'package:juxtapose/states/directions.dart';
 import 'package:provider/provider.dart';
 
@@ -19,8 +22,10 @@ GetIt getIt = GetIt.instance;
 void main() {
   DotEnv().load('.env');
 
-  getIt.registerLazySingleton(() => Api('items'));
+  getIt.registerSingleton<ItemsApi>(ItemsApi());
+  getIt.registerSingleton<FavouriteApi>(FavouriteApi());
   getIt.registerFactory(() => DirectionsModel());
+  getIt.registerFactory(() => Favourite());
 
 //  getIt.registerSingleton<DirectionsModel>(DirectionsModel(),signalsReady:true);
   runApp(ChangeNotifierProvider(
@@ -80,7 +85,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   TextEditingController _saveListController = TextEditingController();
 
-
   @override
   void initState() {
     super.initState();
@@ -90,7 +94,8 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
 
-    _currentIndex = ListType.getIndexByListName(Provider.of<DirectionsModel>(context).listName);
+    _currentIndex = ListType.getIndexByListName(
+        Provider.of<DirectionsModel>(context).listName);
 
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
@@ -111,13 +116,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 print(value);
 
                 // Save list pressed
-                if(value==0) {
+                if (value == 0) {
                   _displaySaveListDialog(context);
                 }
 
                 //Update the current choice.
                 //However, this choice won't be updated in body section since it's a Stateless widget.
-
               },
               itemBuilder: (BuildContext context) => <PopupMenuEntry>[
                 const PopupMenuItem(
@@ -156,7 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
               title: Text(ListType.COSTCO),
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.attach_money),
+              icon: Icon(Icons.card_travel),
               title: Text(ListType.OTHER),
             )
           ],
@@ -175,7 +179,8 @@ class _MyHomePageState extends State<MyHomePage> {
               ListTile(
                 title: Text(ListType.DEFAULT),
                 onTap: () {
-                  Provider.of<DirectionsModel>(context).setListName(ListType.DEFAULT);
+                  Provider.of<DirectionsModel>(context)
+                      .setListName(ListType.DEFAULT);
                   // Then close the drawer
                   Navigator.pop(context);
                 },
@@ -183,7 +188,8 @@ class _MyHomePageState extends State<MyHomePage> {
               ListTile(
                 title: Text(ListType.ASIAN),
                 onTap: () {
-                  Provider.of<DirectionsModel>(context).setListName(ListType.ASIAN);
+                  Provider.of<DirectionsModel>(context)
+                      .setListName(ListType.ASIAN);
                   // Then close the drawer
                   Navigator.pop(context);
                 },
@@ -191,7 +197,8 @@ class _MyHomePageState extends State<MyHomePage> {
               ListTile(
                 title: Text(ListType.ALDI),
                 onTap: () {
-                  Provider.of<DirectionsModel>(context).setListName(ListType.ALDI);
+                  Provider.of<DirectionsModel>(context)
+                      .setListName(ListType.ALDI);
                   // Then close the drawer
                   Navigator.pop(context);
                 },
@@ -199,7 +206,8 @@ class _MyHomePageState extends State<MyHomePage> {
               ListTile(
                 title: Text(ListType.COSTCO),
                 onTap: () {
-                  Provider.of<DirectionsModel>(context).setListName(ListType.COSTCO);
+                  Provider.of<DirectionsModel>(context)
+                      .setListName(ListType.COSTCO);
                   // Then close the drawer
                   Navigator.pop(context);
                 },
@@ -234,7 +242,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _onNavigationTabTapped(int index) {
     setState(() {
-      Provider.of<DirectionsModel>(context).setListName(ListType.getListNameByIndex(index));
+      Provider.of<DirectionsModel>(context)
+          .setListName(ListType.getListNameByIndex(index));
       _currentIndex = index;
     });
   }
@@ -301,6 +310,12 @@ class _MyHomePageState extends State<MyHomePage> {
               new FlatButton(
                 child: new Text('SAVE'),
                 onPressed: () {
+                  Favourite newFavourite = new Favourite();
+                  newFavourite.setName(_saveListController.text);
+                  newFavourite
+                      .setItems(Provider.of<DirectionsModel>(context).items);
+                  newFavourite.addItem(newFavourite);
+                  print('Favourite ${newFavourite}');
                   Navigator.of(context).pop();
                 },
               ),
