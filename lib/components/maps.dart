@@ -3,7 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_map_polyline/google_map_polyline.dart';
 import 'package:juxtapose/models/locations.dart' as locations;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:juxtapose/states/directions.dart';
+import 'package:juxtapose/states/master.dart';
 import 'package:provider/provider.dart';
 
 class MapRoute extends StatefulWidget {
@@ -48,10 +48,10 @@ class _MapState extends State<MapRoute> {
     loading = true;
     
 
-    print('From address ${Provider.of<DirectionsModel>(context).fromAddress}');
+    print('From address ${Provider.of<MasterModel>(context).fromAddress}');
     _center_coordinates =
         await _googleMapPolyline.getPolylineCoordinatesWithAddress(
-            origin: Provider.of<DirectionsModel>(context).fromAddress,
+            origin: Provider.of<MasterModel>(context).fromAddress,
             destination: 'Google San Bruno',
             mode: RouteMode.driving);
     setState(() {
@@ -111,7 +111,7 @@ class _MapState extends State<MapRoute> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<DirectionsModel>(builder: (context, directions, child) {
+    return Consumer<MasterModel>(builder: (context, directions, child) {
       return Scaffold(
           appBar: AppBar(
             title: Text('Maps Sample App'),

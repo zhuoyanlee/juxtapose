@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:juxtapose/components/booking-form.dart';
 import 'package:juxtapose/components/checklist-widget.dart';
+import 'package:juxtapose/components/favourite-widget.dart';
 import 'package:juxtapose/enums/listType.dart';
 import 'package:juxtapose/models/favourite.dart';
 import 'package:juxtapose/services/api.dart';
@@ -13,7 +14,7 @@ import 'package:juxtapose/components/maps.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:juxtapose/services/favouriteApi.dart';
 import 'package:juxtapose/services/itemsApi.dart';
-import 'package:juxtapose/states/directions.dart';
+import 'package:juxtapose/states/master.dart';
 import 'package:provider/provider.dart';
 
 // This is our global ServiceLocator
@@ -24,12 +25,12 @@ void main() {
 
   getIt.registerSingleton<ItemsApi>(ItemsApi());
   getIt.registerSingleton<FavouriteApi>(FavouriteApi());
-  getIt.registerFactory(() => DirectionsModel());
+  getIt.registerFactory(() => MasterModel());
   getIt.registerFactory(() => Favourite());
 
 //  getIt.registerSingleton<DirectionsModel>(DirectionsModel(),signalsReady:true);
   runApp(ChangeNotifierProvider(
-    builder: (context) => DirectionsModel(),
+    builder: (context) => MasterModel(),
     child: MyApp(),
   ));
 }
@@ -58,6 +59,7 @@ class MyApp extends StatelessWidget {
           '/booking': (context) => BookingForm(),
           '/gmap': (context) => MapRoute(),
           '/checklist': (context) => ChecklistRoute(),
+          '/favourite': (context) => FavouriteRoute(),
         });
   }
 }
@@ -94,8 +96,8 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
 
-    _currentIndex = ListType.getIndexByListName(
-        Provider.of<DirectionsModel>(context).listName);
+    _currentIndex =
+        ListType.getIndexByListName(Provider.of<MasterModel>(context).listName);
 
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
@@ -103,12 +105,12 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
-    return Consumer<DirectionsModel>(builder: (context, directions, child) {
+    return Consumer<MasterModel>(builder: (context, master, child) {
       return Scaffold(
         appBar: AppBar(
           // Here we take the value from the MyHomePage object that was created by
           // the App.build method, and use it to set our appbar title.
-          title: Text('${directions.listName} shopping list'),
+          title: Text('${master.listName} shopping list'),
           actions: <Widget>[
             PopupMenuButton(
               onSelected: (value) {
@@ -165,56 +167,11 @@ class _MyHomePageState extends State<MyHomePage> {
             )
           ],
         ),
-        drawer: Drawer(
-          child: ListView(
-            // Important: Remove any padding from the ListView.
-            padding: EdgeInsets.zero,
-            children: <Widget>[
-              DrawerHeader(
-                child: Text('Shopping Lists'),
-                decoration: BoxDecoration(
-                  color: theme.primaryColor,
-                ),
-              ),
-              ListTile(
-                title: Text(ListType.DEFAULT),
-                onTap: () {
-                  Provider.of<DirectionsModel>(context)
-                      .setListName(ListType.DEFAULT);
-                  // Then close the drawer
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                title: Text(ListType.ASIAN),
-                onTap: () {
-                  Provider.of<DirectionsModel>(context)
-                      .setListName(ListType.ASIAN);
-                  // Then close the drawer
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                title: Text(ListType.ALDI),
-                onTap: () {
-                  Provider.of<DirectionsModel>(context)
-                      .setListName(ListType.ALDI);
-                  // Then close the drawer
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                title: Text(ListType.COSTCO),
-                onTap: () {
-                  Provider.of<DirectionsModel>(context)
-                      .setListName(ListType.COSTCO);
-                  // Then close the drawer
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
-        ),
+        drawer: FutureBuilder(
+            future: master.fetchFavourites(),
+            builder: (context, snapshot) {
+              return _listFavourites(snapshot);
+            }),
         body: Center(
             // Center is a layout widget. It takes a single child and positions it
             // in the middle of the parent.
@@ -240,16 +197,77 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  Widget _listFavourites(AsyncSnapshot<List<Favourite>> snapshot) {
+    final ThemeData theme = Theme.of(context);
+    MasterModel master = Provider.of<MasterModel>(context);
+
+    if (snapshot.hasData) {
+      List<Favourite> favourites = snapshot.data;
+
+      List<Widget> tilesList = [];
+      tilesList.add(DrawerHeader(
+        child: Text('Shopping Lists'),
+        decoration: BoxDecoration(
+          color: theme.primaryColor,
+        ),
+      ));
+
+      for (Favourite fav in favourites) {
+        ListTile tile = new ListTile(
+            title: Text(fav.name),
+            onTap: () {
+              master.selectedFavourite = fav;
+              print('navigate to favourites');
+              Navigator.pushNamed(context, '/favourite');
+              print('Complete navigate to favourites');
+            });
+        tilesList.add(tile);
+      }
+      ListView.builder(
+          itemCount: favourites.length,
+          itemBuilder: (context, index) {
+            final fav = favourites[index];
+
+            return ListTile(
+                title: Text(fav.name),
+                onTap: () {
+                  master.selectedFavourite = fav;
+                  print('navigate to favourites');
+                  Navigator.pushNamed(context, '/favourite');
+                  print('Complete navigate to favourites');
+                });
+          });
+      return Drawer(
+        child: ListView.builder(
+            itemCount: favourites.length,
+            itemBuilder: (context, index) {
+              final fav = favourites[index];
+
+              return ListTile(
+                  title: Text(fav.name),
+                  onTap: () {
+                    master.selectedFavourite = fav;
+                    print('navigate to favourites');
+                    Navigator.pushNamed(context, '/favourite');
+                    print('Complete navigate to favourites');
+                  });
+            }),
+      );
+    } else {
+      return CircularProgressIndicator();
+    }
+  }
+
   void _onNavigationTabTapped(int index) {
     setState(() {
-      Provider.of<DirectionsModel>(context)
+      Provider.of<MasterModel>(context)
           .setListName(ListType.getListNameByIndex(index));
       _currentIndex = index;
     });
   }
 
   Widget addChecklist() {
-    DirectionsModel directions = Provider.of<DirectionsModel>(context);
+    MasterModel directions = Provider.of<MasterModel>(context);
 
     return Column(
       children: <Widget>[
@@ -304,6 +322,7 @@ class _MyHomePageState extends State<MyHomePage> {
             title: Text('Save list as'),
             content: TextField(
               controller: _saveListController,
+              autofocus: true,
               decoration: InputDecoration(hintText: "List Name"),
             ),
             actions: <Widget>[
@@ -313,10 +332,11 @@ class _MyHomePageState extends State<MyHomePage> {
                   Favourite newFavourite = new Favourite();
                   newFavourite.setName(_saveListController.text);
                   newFavourite
-                      .setItems(Provider.of<DirectionsModel>(context).items);
+                      .setItems(Provider.of<MasterModel>(context).items);
                   newFavourite.addItem(newFavourite);
                   print('Favourite ${newFavourite}');
-                  Navigator.of(context).pop();
+
+                  Navigator.pushNamed(context, '/');
                 },
               ),
               new FlatButton(
@@ -376,7 +396,7 @@ class AddItemState extends State<AddItemForm> {
   }
 
   void _submitAction() {
-    DirectionsModel model = Provider.of<DirectionsModel>(context);
+    MasterModel model = Provider.of<MasterModel>(context);
     Item newItem = new Item(model.getListName(), controller.text);
     model.addItem(newItem);
 

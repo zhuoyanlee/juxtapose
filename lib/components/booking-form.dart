@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:juxtapose/states/directions.dart';
+import 'package:juxtapose/states/master.dart';
 
 class BookingForm extends StatefulWidget {
 
@@ -13,7 +13,7 @@ class BookingFormState extends State<BookingForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<DirectionsModel>(builder: (context, directions, child) {
+    return Consumer<MasterModel>(builder: (context, directions, child) {
       return Scaffold(
         appBar: AppBar(
           // Here we take the value from the MyHomePage object that was created by

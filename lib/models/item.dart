@@ -29,7 +29,7 @@ class Item {
     return 'Item{id: $id, name: $name, description: $description, checked: $checked}';
   }
 
-  Item.fromJson(this.id, Map data) {
+  Item.fromJson(Map data) {
     this.name = data['name'];
     this.description = data['description'];
     this.checked = data['checked'];

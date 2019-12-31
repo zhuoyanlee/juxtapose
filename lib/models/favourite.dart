@@ -13,7 +13,7 @@ class Favourite extends ChangeNotifier {
   String _id;
   String _name;
   List<Item> _items;
-
+  List<Favourite> _favourites;
 
   Favourite();
 
@@ -36,16 +36,29 @@ class Favourite extends ChangeNotifier {
 
   }
 
+  Future<List<Favourite>> fetchItems() async {
+    var result = await _api.getDataCollection();
+
+    _favourites = result.documents
+        .map((doc) => Favourite.fromMap(doc.data, doc.documentID))
+        .toList();
+    return _favourites;
+  }
+
   List<Item> get items => _items;
 
   void setItems(List<Item> value) {
     _items = value;
   }
 
-  Favourite.fromMap(Map snapshot, String id)
-      : _id = id ?? '',
-        _name = snapshot['name'],
-        _items = snapshot['items'] ?? '';
+  Favourite.fromMap(Map snapshot, String id) {
+    _id = id ?? '';
+    _name = snapshot['name'];
+
+    var list = snapshot['items'] as List;
+
+    _items = list.map((i)=> Item.fromJson(i)).toList();
+  }
 
   toJson() {
     return {

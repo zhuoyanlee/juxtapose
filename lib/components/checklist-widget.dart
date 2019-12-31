@@ -4,7 +4,7 @@ import 'package:juxtapose/components/checkbox.dart';
 import 'package:juxtapose/models/item.dart';
 import 'package:provider/provider.dart';
 
-import 'package:juxtapose/states/directions.dart';
+import 'package:juxtapose/states/master.dart';
 
 class ChecklistRoute extends StatefulWidget {
   @override
@@ -15,7 +15,7 @@ class ChecklistState extends State<ChecklistRoute> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: Provider.of<DirectionsModel>(context).fetchItems(),
+        future: Provider.of<MasterModel>(context).fetchItems(),
         builder: (context, snapshot) {
           return _listCheckboxes(snapshot);
         });
@@ -53,7 +53,7 @@ class ChecklistState extends State<ChecklistRoute> {
                 key: Key(item.id),
                 onDismissed: (direction) {
                   setState(() {
-                    Provider.of<DirectionsModel>(context).removeItem(item.id);
+                    Provider.of<MasterModel>(context).removeItem(item.id);
                     items.removeAt(index);
                   });
                 },
@@ -68,7 +68,7 @@ class ChecklistState extends State<ChecklistRoute> {
                         setState(() {
                           print('Item updated has ID ${item.id}');
                           item.checked = newValue;
-                          Provider.of<DirectionsModel>(context)
+                          Provider.of<MasterModel>(context)
                               .updateItem(item, item.id);
                         });
                       },
