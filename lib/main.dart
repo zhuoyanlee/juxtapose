@@ -16,6 +16,7 @@ import 'package:juxtapose/services/favouriteApi.dart';
 import 'package:juxtapose/services/itemsApi.dart';
 import 'package:juxtapose/states/master.dart';
 import 'package:provider/provider.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 // This is our global ServiceLocator
 GetIt getIt = GetIt.instance;
@@ -36,7 +37,6 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -86,6 +86,28 @@ class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
 
   TextEditingController _saveListController = TextEditingController();
+
+  // This widget is the root of your application.
+  RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
+
+  void _onRefresh() async {
+    print('refreshing');
+//    await Provider.of<MasterModel>(context).fetchFavourites();
+//    await Provider.of<MasterModel>(context).fetchItems();
+    // monitor network fetch
+    setState(() {});
+    // if failed,use refreshFailed()
+    _refreshController.refreshCompleted();
+  }
+
+  void _onLoading() async {
+    // monitor network fetch
+    // if failed,use loadFailed(),if no data return,use LoadNodata()
+    print('on loading');
+    setState(() {});
+    _refreshController.loadComplete();
+  }
 
   @override
   void initState() {
@@ -172,13 +194,18 @@ class _MyHomePageState extends State<MyHomePage> {
             builder: (context, snapshot) {
               return _listFavourites(snapshot);
             }),
-        body: Center(
+        body: SmartRefresher(
+            enablePullDown: true,
+            enablePullUp: true,
+            controller: _refreshController,
+            onRefresh: _onRefresh,
+            onLoading: _onLoading,
             // Center is a layout widget. It takes a single child and positions it
             // in the middle of the parent.
             child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[ChecklistRoute()],
-        )),
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[ChecklistRoute()],
+            )),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             Navigator.push(
@@ -204,54 +231,34 @@ class _MyHomePageState extends State<MyHomePage> {
     if (snapshot.hasData) {
       List<Favourite> favourites = snapshot.data;
 
-      List<Widget> tilesList = [];
-      tilesList.add(DrawerHeader(
-        child: Text('Shopping Lists'),
-        decoration: BoxDecoration(
-          color: theme.primaryColor,
-        ),
-      ));
-
-      for (Favourite fav in favourites) {
-        ListTile tile = new ListTile(
-            title: Text(fav.name),
-            onTap: () {
-              master.selectedFavourite = fav;
-              print('navigate to favourites');
-              Navigator.pushNamed(context, '/favourite');
-              print('Complete navigate to favourites');
-            });
-        tilesList.add(tile);
-      }
-      ListView.builder(
-          itemCount: favourites.length,
-          itemBuilder: (context, index) {
-            final fav = favourites[index];
-
-            return ListTile(
-                title: Text(fav.name),
-                onTap: () {
-                  master.selectedFavourite = fav;
-                  print('navigate to favourites');
-                  Navigator.pushNamed(context, '/favourite');
-                  print('Complete navigate to favourites');
-                });
-          });
       return Drawer(
-        child: ListView.builder(
-            itemCount: favourites.length,
-            itemBuilder: (context, index) {
-              final fav = favourites[index];
+        child: ListView(
+          children: <Widget>[
+            DrawerHeader(
+              child: Text('Favourite Lists'),
+              decoration: BoxDecoration(
+                  image: DecorationImage(
+                      fit: BoxFit.fill,
+                      image: AssetImage(
+                          'assets/images/drawer_header_background.png'))),
+            ),
+            ListView.builder(
+                shrinkWrap: true,
+                itemCount: favourites.length,
+                itemBuilder: (context, index) {
+                  final fav = favourites[index];
 
-              return ListTile(
-                  title: Text(fav.name),
-                  onTap: () {
-                    master.selectedFavourite = fav;
-                    print('navigate to favourites');
-                    Navigator.pushNamed(context, '/favourite');
-                    print('Complete navigate to favourites');
-                  });
-            }),
+                  return ListTile(
+                      title: Text(fav.name),
+                      onTap: () {
+                        master.selectedFavourite = fav;
+                        print('navigate to favourites');
+                        Navigator.pushNamed(context, '/favourite');
+                        print('Complete navigate to favourites');
+                      });
+                })
+          ],
+        ),
       );
     } else {
       return CircularProgressIndicator();

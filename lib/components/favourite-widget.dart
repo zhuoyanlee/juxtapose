@@ -67,8 +67,33 @@ class _FavouriteState extends State<FavouriteRoute>
                       _translateButton.value * 3.0,
                       0.0,
                     ),
-                    child: addToList(ListType.DEFAULT),
+                    child: addToList(ListType.DEFAULT, Icons.shopping_basket),
                   ),
+//              Transform(
+//                transform: Matrix4.translationValues(
+//                  0.0,
+//                  _translateButton.value * 3.0,
+//                  0.0,
+//                ),
+//                child: addToList(ListType.ASIAN, Icons.accessibility),
+//              ),
+              Transform(
+                transform: Matrix4.translationValues(
+                  0.0,
+                  _translateButton.value * 3.0,
+                  0.0,
+                ),
+                child: addToList(ListType.ALDI, Icons.shutter_speed),
+              ),
+              Transform(
+                transform: Matrix4.translationValues(
+                  0.0,
+                  _translateButton.value * 3.0,
+                  0.0,
+                ),
+                child: addToList(ListType.COSTCO, Icons.attach_money),
+              ),
+
               toggle(),
                 ]),
         body: ListView.builder(
@@ -98,9 +123,10 @@ class _FavouriteState extends State<FavouriteRoute>
     isOpened = !isOpened;
 
   }
-  Widget addToList(String listType) {
+  Widget addToList(String listType, final IconData iconType) {
     return FloatingActionButton(
-
+heroTag: null,
+        mini: true,
         onPressed: () {
           MasterModel model = Provider.of<MasterModel>(context);
           Favourite selected = model.selectedFavourite;
@@ -111,8 +137,8 @@ class _FavouriteState extends State<FavouriteRoute>
           }
           Navigator.pushNamed(context, '/');
         },
-        tooltip: 'Add to Default List',
-        child: Icon(Icons.playlist_add),
+        tooltip: 'Add to ${listType} List',
+        child: Icon(iconType),
 
       );
   }

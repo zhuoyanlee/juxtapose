@@ -57,6 +57,8 @@ class MasterModel extends ChangeNotifier {
         .where((x)=> x.data['name']==this.listName)
         .map((doc) => Item.fromMap(doc.data, doc.documentID))
         .toList();
+
+    print('list of items: ${_items}');
     return _items;
   }
 
