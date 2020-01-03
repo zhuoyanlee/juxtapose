@@ -129,98 +129,120 @@ class _MyHomePageState extends State<MyHomePage> {
     // than having to individually change instances of widgets.
     return Consumer<MasterModel>(builder: (context, master, child) {
       return Scaffold(
-        appBar: AppBar(
-          // Here we take the value from the MyHomePage object that was created by
-          // the App.build method, and use it to set our appbar title.
-          title: Text('${master.listName} shopping list'),
-          actions: <Widget>[
-            PopupMenuButton(
-              onSelected: (value) {
-                //print the selected option
-                print(value);
+          appBar: AppBar(
+            // Here we take the value from the MyHomePage object that was created by
+            // the App.build method, and use it to set our appbar title.
+            title: Text('${master.listName} shopping list'),
+            actions: <Widget>[
+              PopupMenuButton(
+                onSelected: (value) {
+                  //print the selected option
+                  print(value);
 
-                // Save list pressed
-                if (value == 0) {
-                  _displaySaveListDialog(context);
-                }
+                  // Save list pressed
+                  if (value == 0) {
+                    _onRefresh();
+                  }
+                  if (value == 1) {
+                    _displaySaveListDialog(context);
+                  }
+                  if(value == 2) {
+                    master.removeCurrentItemList();
+                  }
 
-                //Update the current choice.
-                //However, this choice won't be updated in body section since it's a Stateless widget.
+                  //Update the current choice.
+                  //However, this choice won't be updated in body section since it's a Stateless widget.
+                },
+                itemBuilder: (BuildContext context) => <PopupMenuEntry>[
+                  const PopupMenuItem(
+                    value: 0,
+                    child: Text('Refresh'),
+                  ),
+                  const PopupMenuItem(
+                    value: 1,
+                    child: Text('Save list'),
+                  ),
+                  const PopupMenuItem(
+                    value: 2,
+                    child: Text('Clear list'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          bottomNavigationBar: BottomNavigationBar(
+            onTap: _onNavigationTabTapped,
+            // new
+            selectedItemColor: Colors.amber,
+            currentIndex: _currentIndex,
+            type: BottomNavigationBarType.fixed,
+            items: [
+              BottomNavigationBarItem(
+                icon: new Icon(Icons.shopping_basket),
+                title: new Text(ListType.DEFAULT),
+              ),
+              BottomNavigationBarItem(
+                icon: new Icon(Icons.accessibility),
+                title: new Text(ListType.ASIAN),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.shutter_speed),
+                title: Text(ListType.ALDI),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.attach_money),
+                title: Text(ListType.COSTCO),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.card_travel),
+                title: Text(ListType.OTHER),
+              )
+            ],
+          ),
+          drawer: FutureBuilder(
+              future: master.fetchFavourites(),
+              builder: (context, snapshot) {
+                return _listFavourites(snapshot);
+              }),
+          body: LayoutBuilder(builder:
+              (BuildContext context, BoxConstraints viewportConstraints) {
+            return SmartRefresher(
+                enablePullDown: true,
+                enablePullUp: true,
+                controller: _refreshController,
+                onRefresh: _onRefresh,
+                onLoading: _onLoading,
+
+                child: SingleChildScrollView(
+                // Center is a layout widget. It takes a single child and positions it
+                // in the middle of the parent.
+                child: ConstrainedBox(
+              constraints:
+                  BoxConstraints(maxHeight: viewportConstraints.maxHeight),
+//                padding: const EdgeInsets.all(8),
+//              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              child: ChecklistRoute(),
+            )));
+          }),
+          floatingActionButton: Center(
+heightFactor: 1,
+            child: FloatingActionButton(
+              backgroundColor: Colors.white,
+              mini: true,
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute<Null>(
+                      builder: (BuildContext context) {
+                        return AddItemForm();
+                      },
+                      fullscreenDialog: false,
+                    ));
               },
-              itemBuilder: (BuildContext context) => <PopupMenuEntry>[
-                const PopupMenuItem(
-                  value: 0,
-                  child: Text('Save list'),
-                ),
-                const PopupMenuItem(
-                  value: 1,
-                  child: Text('Clear list'),
-                ),
-              ],
-            ),
-          ],
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          onTap: _onNavigationTabTapped,
-          // new
-          selectedItemColor: Colors.amber,
-          currentIndex: _currentIndex,
-          type: BottomNavigationBarType.fixed,
-          items: [
-            BottomNavigationBarItem(
-              icon: new Icon(Icons.shopping_basket),
-              title: new Text(ListType.DEFAULT),
-            ),
-            BottomNavigationBarItem(
-              icon: new Icon(Icons.accessibility),
-              title: new Text(ListType.ASIAN),
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.shutter_speed),
-              title: Text(ListType.ALDI),
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.attach_money),
-              title: Text(ListType.COSTCO),
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.card_travel),
-              title: Text(ListType.OTHER),
-            )
-          ],
-        ),
-        drawer: FutureBuilder(
-            future: master.fetchFavourites(),
-            builder: (context, snapshot) {
-              return _listFavourites(snapshot);
-            }),
-        body: SmartRefresher(
-            enablePullDown: true,
-            enablePullUp: true,
-            controller: _refreshController,
-            onRefresh: _onRefresh,
-            onLoading: _onLoading,
-            // Center is a layout widget. It takes a single child and positions it
-            // in the middle of the parent.
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[ChecklistRoute()],
-            )),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute<Null>(
-                  builder: (BuildContext context) {
-                    return AddItemForm();
-                  },
-                  fullscreenDialog: false,
-                ));
-          },
-          tooltip: 'Increment',
-          child: Icon(Icons.add),
-        ), // This trailing comma makes auto-formatting nicer for build methods.
-      );
+              tooltip: 'Increment',
+              child: Icon(Icons.add),
+            ), // This trailing comma makes auto-formatting nicer for build methods.
+          ));
     });
   }
 
@@ -233,6 +255,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
       return Drawer(
         child: ListView(
+          shrinkWrap: true,
           children: <Widget>[
             DrawerHeader(
               child: Text('Favourite Lists'),

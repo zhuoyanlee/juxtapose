@@ -19,23 +19,6 @@ class ChecklistState extends State<ChecklistRoute> {
         builder: (context, snapshot) {
           return _listCheckboxes(snapshot);
         });
-//    List<Item> items = Provider.of<DirectionsModel>(context).items;
-//
-//    if(items.isEmpty) {
-//      Provider.of<DirectionsModel>(context).fetchItems().then((val){
-//        items = val;
-//        print('loading items: ${val}');
-//      });
-//    }
-//    print('Items: ${items}');
-//
-//    return Column(
-//        crossAxisAlignment: CrossAxisAlignment.start,
-//        children: [_listCheckboxes(items)]);
-//    return _listCheckboxes(items);
-//    return Center(child: _listCheckboxes(items));
-    // If using it as a page, use Scarffold
-//    Scaffold(body: Center(child: _listCheckboxes(items)));
   }
 
   Widget _listCheckboxes(AsyncSnapshot<List<Item>> snapshot) {
@@ -43,7 +26,8 @@ class ChecklistState extends State<ChecklistRoute> {
       List<Item> items = snapshot.data;
 
       return ListView.builder(
-          padding: const EdgeInsets.all(8),
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(10),
           itemCount: items.length,
           shrinkWrap: true,
           itemBuilder: (BuildContext context, int index) {
@@ -51,6 +35,7 @@ class ChecklistState extends State<ChecklistRoute> {
 
             return Dismissible(
                 key: Key(item.id),
+                direction: DismissDirection.startToEnd,
                 onDismissed: (direction) {
                   setState(() {
                     Provider.of<MasterModel>(context).removeItem(item.id);

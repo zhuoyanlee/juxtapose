@@ -71,7 +71,11 @@ class MasterModel extends ChangeNotifier {
     return  Item.fromMap(doc.data, doc.documentID) ;
   }
 
-
+  Future removeCurrentItemList() {
+    for(Item item in _items) {
+      removeItem(item.id);
+    }
+  }
   Future removeItem(String id) async{
     await _itemsApi.removeDocument(id) ;
     notifyListeners();
