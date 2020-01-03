@@ -20,6 +20,7 @@ class MasterModel extends ChangeNotifier {
 
   String listName = ListType.DEFAULT;
   List<Item> _items = [];
+  Item editingItem;
   List<Favourite> _favourites = [];
   Favourite selectedFavourite;
 
@@ -58,7 +59,7 @@ class MasterModel extends ChangeNotifier {
         .map((doc) => Item.fromMap(doc.data, doc.documentID))
         .toList();
 
-    print('list of items: ${_items}');
+//    print('list of items: ${_items}');
     return _items;
   }
 
@@ -113,7 +114,7 @@ class MasterModel extends ChangeNotifier {
         .map((doc) => Favourite.fromMap(doc.data, doc.documentID))
         .toList();
 
-    print('list of favourites ${_favourites}');
+//    print('list of favourites ${_favourites}');
 
     return _favourites;
   }

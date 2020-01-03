@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:juxtapose/components/checkbox.dart';
+import 'package:juxtapose/components/editItem-form.dart';
 import 'package:juxtapose/models/item.dart';
 import 'package:provider/provider.dart';
 
@@ -45,19 +46,35 @@ class ChecklistState extends State<ChecklistRoute> {
                 child: Container(
                     height: 50,
                     color: Colors.amber,
-                    child: LabeledCheckbox(
-                      label: items[index].description,
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      value: item.checked,
-                      onChanged: (bool newValue) {
-                        setState(() {
-                          print('Item updated has ID ${item.id}');
-                          item.checked = newValue;
-                          Provider.of<MasterModel>(context)
-                              .updateItem(item, item.id);
-                        });
+                    child: GestureDetector(
+                      onLongPress: (){
+                        print('item pressed is : ${item}');
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute<Null>(
+                              builder: (BuildContext context) {
+                                Provider.of<MasterModel>(context).editingItem = item;
+                                return EditItemForm(key: Key(item.id)
+                                    ,editItem:item);
+                              },
+                              fullscreenDialog: false,
+                            ));
+                        print('long press');
                       },
-                    )));
+                      child:LabeledCheckbox(
+                        label: items[index].description,
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        value: item.checked,
+                        onChanged: (bool newValue) {
+                          setState(() {
+                            print('Item updated has ID ${item.id}');
+                            item.checked = newValue;
+                            Provider.of<MasterModel>(context)
+                                .updateItem(item, item.id);
+                          });
+                        },
+                      )))
+                    );
           });
     } else {
       return CircularProgressIndicator();

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
+import 'package:juxtapose/components/addItem-form.dart';
 import 'package:juxtapose/components/booking-form.dart';
 import 'package:juxtapose/components/checklist-widget.dart';
 import 'package:juxtapose/components/favourite-widget.dart';
@@ -196,6 +197,10 @@ class _MyHomePageState extends State<MyHomePage> {
               BottomNavigationBarItem(
                 icon: Icon(Icons.card_travel),
                 title: Text(ListType.OTHER),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.whatshot),
+                title: Text(ListType.BUSHFIRE),
               )
             ],
           ),
@@ -224,9 +229,8 @@ class _MyHomePageState extends State<MyHomePage> {
               child: ChecklistRoute(),
             )));
           }),
-          floatingActionButton: Center(
-heightFactor: 1,
-            child: FloatingActionButton(
+          floatingActionButton:
+            FloatingActionButton(
               backgroundColor: Colors.white,
               mini: true,
               onPressed: () {
@@ -242,7 +246,9 @@ heightFactor: 1,
               tooltip: 'Increment',
               child: Icon(Icons.add),
             ), // This trailing comma makes auto-formatting nicer for build methods.
-          ));
+
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      );
     });
   }
 
@@ -381,55 +387,4 @@ heightFactor: 1,
   }
 }
 
-class AddItemForm extends StatefulWidget {
-  @override
-  State createState() => AddItemState();
-}
 
-class AddItemState extends State<AddItemForm> {
-  final controller = TextEditingController();
-
-  @override
-  void dispose() {
-    // Clean up the controller when the widget is disposed.
-    controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Add Item'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: TextFormField(
-          controller: controller,
-          autofocus: true,
-          onFieldSubmitted: (controller) {
-            _submitAction();
-          },
-          textInputAction: TextInputAction.done,
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        // When the user presses the button, show an alert dialog containing
-        // the text that the user has entered into the text field.
-        onPressed: () {
-          _submitAction();
-        },
-        tooltip: 'Show me the value!',
-        child: Icon(Icons.add_shopping_cart),
-      ),
-    );
-  }
-
-  void _submitAction() {
-    MasterModel model = Provider.of<MasterModel>(context);
-    Item newItem = new Item(model.getListName(), controller.text);
-    model.addItem(newItem);
-
-    Navigator.pushNamed(context, '/');
-  }
-}

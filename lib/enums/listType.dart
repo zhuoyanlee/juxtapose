@@ -4,6 +4,8 @@ class ListType {
   static const String ALDI = 'Aldi';
   static const String COSTCO = 'Costco';
   static const String OTHER = 'Other';
+  static const String BUSHFIRE = 'Bushfire';
+  // After adding here, remember to update the functions below too
 
   static String getListNameByIndex(int index) {
     switch (index) {
@@ -26,6 +28,10 @@ class ListType {
       case 4:
         {
           return OTHER;
+        }
+      case 5:
+        {
+          return BUSHFIRE;
         }
     }
   }
@@ -51,6 +57,10 @@ class ListType {
       case OTHER:
         {
           return 4;
+        }
+      case BUSHFIRE:
+        {
+          return 5;
         }
       default:
         return 0;
